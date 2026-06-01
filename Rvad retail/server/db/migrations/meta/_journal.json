@@ -15,6 +15,13 @@
       "when": 1780206785239,
       "tag": "0001_real_celestials",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780293974371,
+      "tag": "0002_flaky_madelyne_pryor",
+      "breakpoints": true
     }
   ]
 }

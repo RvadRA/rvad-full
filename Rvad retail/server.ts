@@ -348,8 +348,13 @@ async function sendTelegramMessageWithKeyboard(token: string, chatId: number, te
 
 // Background poll loop for Telegram Bot
 async function runTelegramBotPolling() {
-  const internalToken = process.env.TELEGRAM_BOT_TOKEN_INTERNAL || '8200264736:AAGcw3Zxk78D4jN9eCLP8tkKZzW6zucZivA';
+  const internalToken = process.env.TELEGRAM_BOT_TOKEN_INTERNAL;
   const clientToken = process.env.TELEGRAM_BOT_TOKEN_CLIENT;
+
+  if (!internalToken && !clientToken) {
+    console.warn('Telegram polling is disabled because neither TELEGRAM_BOT_TOKEN_INTERNAL nor TELEGRAM_BOT_TOKEN_CLIENT is set.');
+    return;
+  }
 
   const startPollingThread = (token: string, botName: string, botType: 'INTERNAL' | 'CLIENT') => {
     console.log(`📡 Запуск Polling [${botName}] с токеном: ${token.substring(0, 10)}... (Type: ${botType})`);

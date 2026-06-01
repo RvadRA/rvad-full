@@ -3,8 +3,12 @@ const TelegramBot = require('node-telegram-bot-api');
 const fs = require('fs');
 const path = require('path');
 
-// Токен бота
-const token = '8200264736:AAGcw3Zxk78D4jN9eCLP8tkKZzW6zucZivA';
+const token = process.env.TELEGRAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN_CLIENT || process.env.TELEGRAM_BOT_TOKEN_INTERNAL;
+
+if (!token) {
+  console.error('ERROR: Telegram bot token is not configured. Set TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_TOKEN_CLIENT, or TELEGRAM_BOT_TOKEN_INTERNAL in .env.');
+  process.exit(1);
+}
 
 // Инициализируем бота
 const bot = new TelegramBot(token, { polling: true });

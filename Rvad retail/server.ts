@@ -317,7 +317,7 @@ async function handleBotMessage(token: string, botType: 'INTERNAL' | 'CLIENT', c
     const replyText = `❓ <b>Неизвестная команда.</b>\n\nДля владельца доступны команды:\n/status — сводка кассы\n/revenue — отчет\n/low_stock — дефицит\n/alerts — тест сценариев`;
     await sendTelegramMessageWithKeyboard(token, chatId, replyText, ownerKeyboardMarkup);
     return;
-  }
+    }
 }
 
 // Helper function to send messages with optional custom keyboards to Telegram API
@@ -401,25 +401,17 @@ async function runTelegramBotPolling() {
   // Let's assume if clientToken is not defined, but they want client functions, we should run it as CLIENT if it's explicitly melochey_control_bot?
   // Actually, we can just run both. Let's just run them with the correct types.
   
-  if (clientToken && clientToken !== internalToken) {
+  if (internalToken && clientToken && clientToken !== internalToken) {
     // Both defined and different
     startPollingThread(internalToken, "Owner/Internal Bot", "INTERNAL");
     startPollingThread(clientToken, "Customer/Debtor Bot", "CLIENT");
   } else if (!clientToken && internalToken) {
-    // Only one token defined. 
-    // They put melochey_control_bot token somewhere. If they want BOTH functionalities from ONE bot,
-    // we can create two polling threads for the same token, but wait, long polling on the same token from two different threads will conflict (one will clear updates of the other).
-    // So if there's only ONE token, we should probably run it as BOTH by treating it... wait, we need to choose one.
-    // Let's change the single token handler to 'CLIENT' because the user literally said "melochey_control_bot is for clients".
-    // I'll set it to CLIENT to prioritize client commands, but we'll still keep the owner bot if we want to run both.
-    // Instead of choosing, let's just make startPollingThread pass botType='CLIENT' if they only have one token, OR we can pass a special 'BOTH' type?
-    // User complaint: "now it shows exactly on this bot as the owner bot...". Because they only have one token and it used INTERNAL logic.
-    // So if there is no clientToken, run the one token as CLIENT bot.
+    // Only one token defined.
     startPollingThread(internalToken, "Customer/Debtor Bot (Single Token Fallback)", "CLIENT");
   } else if (clientToken && !internalToken) {
     startPollingThread(clientToken, "Customer/Debtor Bot", "CLIENT");
-  } else {
-    // We have both tokens and they are equal? Treat as CLIENT.
+  } else if (internalToken) {
+    // Both tokens are present and equal, or only internalToken is present.
     startPollingThread(internalToken, "Customer/Debtor Bot (Tokens Equal)", "CLIENT");
   }
 }

@@ -53,8 +53,27 @@ async function startServer() {
   });
 
   // CORS — allows the customer storefront browser app to call this API
+  const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://localhost:5174',
+  ];
+  if (process.env.STOREFRONT_URL) {
+    const cleanStorefrontUrl = process.env.STOREFRONT_URL.replace(/\/$/, '');
+    allowedOrigins.push(cleanStorefrontUrl);
+  }
+
   app.use(cors({
-    origin: process.env.STOREFRONT_URL || 'http://localhost:5173',
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const cleanOrigin = origin.replace(/\/$/, '');
+      if (allowedOrigins.includes(cleanOrigin)) {
+        callback(null, true);
+      } else {
+        console.warn(`[CORS] Rejected origin: ${origin}`);
+        callback(new Error(`Origin ${origin} not allowed by CORS`));
+      }
+    },
     credentials: true,
   }));
 

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Premium SEO Meta Tags -->
+    <title>Rvad RetailOS — Панель управления и POS-система «1000 Мелочей»</title>
+    <meta name="description" content="Интеллектуальная торгово-складская система управления магазином 1000 Мелочей. Аналитика продаж, POS-касса, учет долгов и AI-прогнозирование." />
+    <meta name="theme-color" content="#0f172a" />
+    
+    <!-- Web App Manifest for PWA installation -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22 width=%22180%22 height=%22180%22><rect width=%22512%22 height=%22512%22 rx=%22110%22 fill=%22%230f172a%22/><g transform=%22translate(45, 110)%22 fill=%22none%22 stroke=%22%2310b981%22 stroke-width=%2226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M 20 40 Q 50 40 60 70 L 110 240 L 260 240 Q 280 240 290 210 L 330 90 L 100 90%22 stroke-width=%2230%22/><circle cx=%22140%22 cy=%22295%22 r=%2224%22 fill=%22%2310b981%22 stroke=%22none%22/><circle cx=%22230%22 cy=%22295%22 r=%2224%22 fill=%22%2310b981%22 stroke=%22none%22/><circle cx=%22145%22 cy=%22145%22 r=%2220%22 fill=%22none%22 stroke-width=%2224%22/><circle cx=%22205%22 cy=%22145%22 r=%2220%22 fill=%22none%22 stroke-width=%2224%22/><circle cx=%22265%22 cy=%22145%22 r=%2220%22 fill=%22none%22 stroke-width=%2224%22/><path d=%22M 340 295 L 340 90 L 385 200 L 430 90 L 430 295%22 stroke-width=%2234%22 stroke-linejoin=%22miter%22/></g></svg>" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22 width=%22100%22 height=%22100%22><rect width=%22512%22 height=%22512%22 rx=%22110%22 fill=%22%230f172a%22/><g transform=%22translate(45, 110)%22 fill=%22none%22 stroke=%22%2310b981%22 stroke-width=%2226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M 20 40 Q 50 40 60 70 L 110 240 L 260 240 Q 280 240 290 210 L 330 90 L 100 90%22 stroke-width=%2230%22/><circle cx=%22140%22 cy=%22295%22 r=%2224%22 fill=%22%2310b981%22 stroke=%22none%22/><circle cx=%22230%22 cy=%22295%22 r=%2224%22 fill=%22%2310b981%22 stroke=%22none%22/><circle cx=%22145%22 cy=%22145%22 r=%2220%22 fill=%22none%22 stroke-width=%2224%22/><circle cx=%22205%22 cy=%22145%22 r=%2220%22 fill=%22none%22 stroke-width=%2224%22/><circle cx=%22265%22 cy=%22145%22 r=%2220%22 fill=%22none%22 stroke-width=%2224%22/><path d=%22M 340 295 L 340 90 L 385 200 L 430 90 L 430 295%22 stroke-width=%2234%22 stroke-linejoin=%22miter%22/></g></svg>" />
+    
+    <!-- Mobile App Settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="RetailOS" />
+
+    <!-- Google Fonts: Inter for general UI & JetBrains Mono for terminals/codes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <style>
+      /* Ensure beautiful font loading fallback and prevent layout shift */
+      body {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        background-color: #0f172a;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

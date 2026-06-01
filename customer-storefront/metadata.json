@@ -1,0 +1,6 @@
+{
+  "name": "1000 Мелочей",
+  "description": "Портал клиента '1000 Мелочей' с подбором по артикулам, геолокацией и связью с Telegram-ботом",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

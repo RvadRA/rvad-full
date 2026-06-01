@@ -1,0 +1,24 @@
+{
+  "name": "Rvad RetailOS — Панель управления",
+  "short_name": "RetailOS",
+  "description": "Интеллектуальная торгово-складская система управления магазином 1000 Мелочей.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22 width=%22192%22 height=%22192%22><rect width=%22512%22 height=%22512%22 rx=%22110%22 fill=%22%230f172a%22/><g transform=%22translate(45, 110)%22 fill=%22none%22 stroke=%22%2310b981%22 stroke-width=%2226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M 20 40 Q 50 40 60 70 L 110 240 L 260 240 Q 280 240 290 210 L 330 90 L 100 90%22 stroke-width=%2230%22/><circle cx=%22140%22 cy=%22295%22 r=%2224%22 fill=%22%2310b981%22 stroke=%22none%22/><circle cx=%22230%22 cy=%22295%22 r=%2224%22 fill=%22%2310b981%22 stroke=%22none%22/><circle cx=%22145%22 cy=%22145%22 r=%2220%22 fill=%22none%22 stroke-width=%2224%22/><circle cx=%22205%22 cy=%22145%22 r=%2220%22 fill=%22none%22 stroke-width=%2224%22/><circle cx=%22265%22 cy=%22145%22 r=%2220%22 fill=%22none%22 stroke-width=%2224%22/><path d=%22M 340 295 L 340 90 L 385 200 L 430 90 L 430 295%22 stroke-width=%2234%22 stroke-linejoin=%22miter%22/></g></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22 width=%22512%22 height=%22512%22><rect width=%22512%22 height=%22512%22 rx=%22110%22 fill=%22%230f172a%22/><g transform=%22translate(45, 110)%22 fill=%22none%22 stroke=%22%2310b981%22 stroke-width=%2226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M 20 40 Q 50 40 60 70 L 110 240 L 260 240 Q 280 240 290 210 L 330 90 L 100 90%22 stroke-width=%2230%22/><circle cx=%22140%22 cy=%22295%22 r=%2224%22 fill=%22%2310b981%22 stroke=%22none%22/><circle cx=%22230%22 cy=%22295%22 r=%2224%22 fill=%22%2310b981%22 stroke=%22none%22/><circle cx=%22145%22 cy=%22145%22 r=%2220%22 fill=%22none%22 stroke-width=%2224%22/><circle cx=%22205%22 cy=%22145%22 r=%2220%22 fill=%22none%22 stroke-width=%2224%22/><circle cx=%22265%22 cy=%22145%22 r=%2220%22 fill=%22none%22 stroke-width=%2224%22/><path d=%22M 340 295 L 340 90 L 385 200 L 430 90 L 430 295%22 stroke-width=%2234%22 stroke-linejoin=%22miter%22/></g></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

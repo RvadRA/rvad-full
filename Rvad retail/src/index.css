@@ -1,0 +1,191 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+body {
+  background-color: #0F1115;
+  color: #e2e8f0;
+}
+
+/* Base Theme Presets declarations */
+
+.theme-neutral {
+  --theme-app-bg: #F4F6F9;
+  --theme-card-bg: #FFFFFF;
+  --theme-inner-bg: #F0F2F5;
+  --theme-inner-bg-hover: #E4E7EB;
+  --theme-text-main: #1A1A1A;
+  --theme-text-sub: #4B5563;
+  --theme-text-muted: #888888;
+  --theme-border: #E5E7EB;
+  --theme-accent: #2563EB;
+  --theme-accent-hover: #1D4ED8;
+  --theme-accent-contrast: #FFFFFF;
+  --theme-accent-rgb: 37, 99, 235;
+}
+
+.theme-sea {
+  --theme-app-bg: #0F2027;
+  --theme-card-bg: #203A43;
+  --theme-inner-bg: #2C5364;
+  --theme-inner-bg-hover: #36667A;
+  --theme-text-main: #FFFFFF;
+  --theme-text-sub: #A0D2EB;
+  --theme-text-muted: #6E90A6;
+  --theme-border: #2D5B6A;
+  --theme-accent: #00F0D8;
+  --theme-accent-hover: #00DBC5;
+  --theme-accent-contrast: #0F2027;
+  --theme-accent-rgb: 0, 240, 216;
+}
+
+.theme-peach {
+  --theme-app-bg: #FFF5EE;
+  --theme-card-bg: #FFFDD0;
+  --theme-inner-bg: #FDF0E6;
+  --theme-inner-bg-hover: #F8DEC9;
+  --theme-text-main: #4A3728;
+  --theme-text-sub: #7B5E4F;
+  --theme-text-muted: #A38C80;
+  --theme-border: #EAD5C3;
+  --theme-accent: #D84315;
+  --theme-accent-hover: #BF360C;
+  --theme-accent-contrast: #FFFFFF;
+  --theme-accent-rgb: 216, 67, 21;
+}
+
+.theme-lavender {
+  --theme-app-bg: #E6E6FA;
+  --theme-card-bg: #DCD0FF;
+  --theme-inner-bg: #E0DBF5;
+  --theme-inner-bg-hover: #CEBFFF;
+  --theme-text-main: #24153B;
+  --theme-text-sub: #5C4B75;
+  --theme-text-muted: #877A9E;
+  --theme-border: #C5BADB;
+  --theme-accent: #7B1FA2;
+  --theme-accent-hover: #6A1B8A;
+  --theme-accent-contrast: #FFFFFF;
+  --theme-accent-rgb: 123, 31, 162;
+}
+
+/* Deep Class Mapping for active themes */
+
+.theme-neutral,
+.theme-sea,
+.theme-peach,
+.theme-lavender {
+  background-color: var(--theme-app-bg) !important;
+  color: var(--theme-text-main) !important;
+}
+
+/* Core layouts override */
+.theme-neutral .bg-\[\#0F1115\],
+.theme-sea .bg-\[\#0F1115\],
+.theme-peach .bg-\[\#0F1115\],
+.theme-lavender .bg-\[\#0F1115\],
+.theme-neutral body,
+.theme-sea body,
+.theme-peach body,
+.theme-lavender body {
+  background-color: var(--theme-app-bg) !important;
+}
+
+/* Cards backgrounds override */
+.theme-neutral .bg-\[\#161920\], .theme-neutral .bg-\[\#0A0C10\], .theme-neutral .bg-\[\#12151B\], .theme-neutral .bg-\[\#0D0F12\], .theme-neutral .bg-\[\#090B0F\], .theme-neutral .bg-\[\#1A1D24\], .theme-neutral .bg-\[\#121419\], .theme-neutral header, .theme-neutral aside, .theme-neutral nav, .theme-neutral table,
+.theme-sea .bg-\[\#161920\], .theme-sea .bg-\[\#0A0C10\], .theme-sea .bg-\[\#12151B\], .theme-sea .bg-\[\#0D0F12\], .theme-sea .bg-\[\#090B0F\], .theme-sea .bg-\[\#1A1D24\], .theme-sea .bg-\[\#121419\], .theme-sea header, .theme-sea aside, .theme-sea nav, .theme-sea table,
+.theme-peach .bg-\[\#161920\], .theme-peach .bg-\[\#0A0C10\], .theme-peach .bg-\[\#12151B\], .theme-peach .bg-\[\#0D0F12\], .theme-peach .bg-\[\#090B0F\], .theme-peach .bg-\[\#1A1D24\], .theme-peach .bg-\[\#121419\], .theme-peach header, .theme-peach aside, .theme-peach nav, .theme-peach table,
+.theme-lavender .bg-\[\#161920\], .theme-lavender .bg-\[\#0A0C10\], .theme-lavender .bg-\[\#12151B\], .theme-lavender .bg-\[\#0D0F12\], .theme-lavender .bg-\[\#090B0F\], .theme-lavender .bg-\[\#1A1D24\], .theme-lavender .bg-\[\#121419\], .theme-lavender header, .theme-lavender aside, .theme-lavender nav, .theme-lavender table {
+  background-color: var(--theme-card-bg) !important;
+}
+
+/* Inner block, form controls and input backgrounds */
+.theme-neutral .bg-\[\#1C1E26\], .theme-neutral .bg-\[\#1E2129\], .theme-neutral .bg-\[\#21242e\], .theme-neutral .bg-\[\#1f222e\], .theme-neutral .bg-\[\#252833\], .theme-neutral .bg-\[\#252836\], .theme-neutral select, .theme-neutral textarea, .theme-neutral input, .theme-neutral option,
+.theme-sea .bg-\[\#1C1E26\], .theme-sea .bg-\[\#1E2129\], .theme-sea .bg-\[\#21242e\], .theme-sea .bg-\[\#1f222e\], .theme-sea .bg-\[\#252833\], .theme-sea .bg-\[\#252836\], .theme-sea select, .theme-sea textarea, .theme-sea input, .theme-sea option,
+.theme-peach .bg-\[\#1C1E26\], .theme-peach .bg-\[\#1E2129\], .theme-peach .bg-\[\#21242e\], .theme-peach .bg-\[\#1f222e\], .theme-peach .bg-\[\#252833\], .theme-peach .bg-\[\#252836\], .theme-peach select, .theme-peach textarea, .theme-peach input, .theme-peach option,
+.theme-lavender .bg-\[\#1C1E26\], .theme-lavender .bg-\[\#1E2129\], .theme-lavender .bg-\[\#21242e\], .theme-lavender .bg-\[\#1f222e\], .theme-lavender .bg-\[\#252833\], .theme-lavender .bg-\[\#252836\], .theme-lavender select, .theme-lavender textarea, .theme-lavender input, .theme-lavender option {
+  background-color: var(--theme-inner-bg) !important;
+}
+
+/* Global border replacements */
+.theme-neutral, .theme-neutral *,
+.theme-sea, .theme-sea *,
+.theme-peach, .theme-peach *,
+.theme-lavender, .theme-lavender * {
+  border-color: var(--theme-border) !important;
+}
+
+/* Headings and primary text deep contrast */
+.theme-neutral h1, .theme-neutral h2, .theme-neutral h3, .theme-neutral h4, .theme-neutral h5, .theme-neutral th, .theme-neutral .text-white, .theme-neutral .text-slate-100, .theme-neutral .text-slate-200,
+.theme-sea h1, .theme-sea h2, .theme-sea h3, .theme-sea h4, .theme-sea h5, .theme-sea th, .theme-sea .text-white, .theme-sea .text-slate-100, .theme-sea .text-slate-200,
+.theme-peach h1, .theme-peach h2, .theme-peach h3, .theme-peach h4, .theme-peach h5, .theme-peach th, .theme-peach .text-white, .theme-peach .text-slate-100, .theme-peach .text-slate-200,
+.theme-lavender h1, .theme-lavender h2, .theme-lavender h3, .theme-lavender h4, .theme-lavender h5, .theme-lavender th, .theme-lavender .text-white, .theme-lavender .text-slate-100, .theme-lavender .text-slate-200 {
+  color: var(--theme-text-main) !important;
+}
+
+/* Secondary descriptions, muted labels, parameters */
+.theme-neutral p, .theme-neutral span, .theme-neutral label, .theme-neutral td, .theme-neutral .text-slate-300, .theme-neutral .text-slate-400, .theme-neutral .text-slate-500,
+.theme-sea p, .theme-sea span, .theme-sea label, .theme-sea td, .theme-sea .text-slate-300, .theme-sea .text-slate-400, .theme-sea .text-slate-500,
+.theme-peach p, .theme-peach span, .theme-peach label, .theme-peach td, .theme-peach .text-slate-300, .theme-peach .text-slate-400, .theme-peach .text-slate-500,
+.theme-lavender p, .theme-lavender span, .theme-lavender label, .theme-lavender td, .theme-lavender .text-slate-300, .theme-lavender .text-slate-400, .theme-lavender .text-slate-500 {
+  color: var(--theme-text-sub) !important;
+}
+
+/* Active navigation item text, active subtexts or brand highlights */
+.theme-neutral .text-blue-400, .theme-neutral .text-indigo-400, .theme-neutral .text-emerald-400, .theme-neutral .text-emerald-450,
+.theme-sea .text-blue-400, .theme-sea .text-indigo-400, .theme-sea .text-emerald-400, .theme-sea .text-emerald-450,
+.theme-peach .text-blue-400, .theme-peach .text-indigo-400, .theme-peach .text-emerald-400, .theme-peach .text-emerald-450,
+.theme-lavender .text-blue-400, .theme-lavender .text-indigo-400, .theme-lavender .text-emerald-400, .theme-lavender .text-emerald-450 {
+  color: var(--theme-accent) !important;
+}
+
+/* Solid accent action buttons & active badges */
+.theme-neutral .bg-blue-600, .theme-neutral .bg-indigo-600, .theme-neutral .bg-emerald-600,
+.theme-sea .bg-blue-600, .theme-sea .bg-indigo-600, .theme-sea .bg-emerald-600,
+.theme-peach .bg-blue-600, .theme-peach .bg-indigo-600, .theme-peach .bg-emerald-600,
+.theme-lavender .bg-blue-600, .theme-lavender .bg-indigo-600, .theme-lavender .bg-emerald-600 {
+  background-color: var(--theme-accent) !important;
+  color: var(--theme-accent-contrast) !important;
+}
+
+.theme-neutral .hover\:bg-blue-500:hover, .theme-neutral .hover\:bg-indigo-500:hover, .theme-neutral .hover\:bg-emerald-500:hover,
+.theme-sea .hover\:bg-blue-500:hover, .theme-sea .hover\:bg-indigo-500:hover, .theme-sea .hover\:bg-emerald-500:hover,
+.theme-peach .hover\:bg-blue-500:hover, .theme-peach .hover\:bg-indigo-500:hover, .theme-peach .hover\:bg-emerald-500:hover,
+.theme-lavender .hover\:bg-blue-500:hover, .theme-lavender .hover\:bg-indigo-500:hover, .theme-lavender .hover\:bg-emerald-500:hover {
+  background-color: var(--theme-accent-hover) !important;
+}
+
+/* Soft secondary panel wrappers (usually colored with /20 or /30 opacity overlays) */
+.theme-neutral .bg-blue-600\/20, .theme-neutral .bg-indigo-600\/30, .theme-neutral .bg-emerald-600\/30, .theme-neutral .bg-blue-500\/5,
+.theme-sea .bg-blue-600\/20, .theme-sea .bg-indigo-600\/30, .theme-sea .bg-emerald-600\/30, .theme-sea .bg-blue-500\/5,
+.theme-peach .bg-blue-600\/20, .theme-peach .bg-indigo-600\/30, .theme-peach .bg-emerald-600\/30, .theme-peach .bg-blue-500\/5,
+.theme-lavender .bg-blue-600\/20, .theme-lavender .bg-indigo-600\/30, .theme-lavender .bg-emerald-600\/30, .theme-lavender .bg-blue-500\/5 {
+  background-color: rgba(var(--theme-accent-rgb), 0.12) !important;
+  border-color: rgba(var(--theme-accent-rgb), 0.25) !important;
+}
+
+/* Standard hover item interactions */
+.theme-neutral .hover\:bg-slate-800\/80:hover, .theme-neutral .hover\:bg-slate-800:hover,
+.theme-sea .hover\:bg-slate-800\/80:hover, .theme-sea .hover\:bg-slate-800:hover,
+.theme-peach .hover\:bg-slate-800\/80:hover, .theme-peach .hover\:bg-slate-800:hover,
+.theme-lavender .hover\:bg-slate-800\/80:hover, .theme-lavender .hover\:bg-slate-800:hover {
+  background-color: var(--theme-inner-bg-hover) !important;
+}
+
+/* SVG icons styling fallback to preserve dynamic branding color contrast */
+.theme-neutral svg,
+.theme-sea svg,
+.theme-peach svg,
+.theme-lavender svg {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Highlighted texts */
+.theme-neutral .text-emerald-500, .theme-sea .text-emerald-500, .theme-peach .text-emerald-500, .theme-lavender .text-emerald-500 {
+  color: var(--theme-accent) !important;
+}

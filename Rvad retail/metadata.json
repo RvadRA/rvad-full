@@ -1,0 +1,6 @@
+{
+  "name": "RVAD RetailOS",
+  "description": "Современная операционная система для розничной торговли, включающая POS, склад, дебиторскую задолженность, CRM, аналитику и работу в офлайн-режиме.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

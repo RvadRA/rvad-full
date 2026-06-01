@@ -1,0 +1,2890 @@
+import React, { useState, useMemo, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { 
+  Search, ShoppingCart, Plus, Minus, ArrowLeft, CheckCircle2, 
+  ChevronRight, MapPin, CreditCard, Home, History as HistoryIcon, 
+  User, Percent, MessageCircle, ChevronDown, Receipt, AlertCircle, 
+  CheckCircle, Package, Volume2, VolumeX, Sparkles, X, ArrowUpDown, Bell, Info, ShieldCheck,
+  Store, Compass, Map, Smartphone, Heart, LogOut, Lock, Phone, Key, Eye, EyeOff, Send, Star
+} from 'lucide-react';
+import { storefrontApi } from './api';
+import { CartItem, Product, Category, Order, UserProfile } from './types';
+
+// Web Audio API Sound Generator for rich, server-independent micro-interactions
+const SoundEngine = {
+  playTick: () => {
+    try {
+      const saved = localStorage.getItem('sound_enabled');
+      if (saved === 'false') return;
+      
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(450, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.03);
+      
+      gain.gain.setValueAtTime(0.015, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.03);
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.sta
+      osc.st
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    accentTextClass: 'text-white',
+    accentHoverBgClass: 'hover:bg-[#1e293b]',
+    accentLightBgClass: 'bg-white/60',
+    accentLightTextClass: 'text-[#0f172a]',
+    pillSelectedClass: 'bg-[#0f172a] text-white shadow-[0_4px_12px_rgba(15,23,42,0.3)]',
+    badgeBgClass: 'bg-red-500',
+    inputBgClass: 'bg-white/50 backdrop-blur-md border border-white/60 focus:bg-white/80',
+    cardHighlightClass: 'bg-white/40',
+    ringClass: 'focus:ring-gray-900/10',
+  }
+};
+
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(price);
+};
+
+export default function App() {
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => {
+    const saved = localStorage.getItem('logged_in_user');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return null;
+  });
+
+  const [activeTab, setActiveTab] = useState<'catalog' | 'favorites' | 'cart' | 'history' | 'profile' | 'checkout' | 'success'>('catalog');
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategoryId, setActiveCategoryId] = useState('all');
+  
+  // Favorites storage
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('favorites_list');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Sync favorites
+  useEffect(() => {
+    localStorage.setItem('favorites_list', JSON.stringify(favorites));
+  }, [favorites]);
+
+  // Auth screen toggle sub-states
+  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'forgot'>('login');
+  const [authName, setAuthName] = useState('');
+  const [authPhone, setAuthPhone] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [forgotStep, setForgotStep] = useState<'phone' | 'code' | 'new_password'>('phone');
+
+  // Custom Dynamic Upgrades & Comfort Enhancements
+  const [selectedThemeId, setSelectedThemeId] = useState<string>(() => {
+    return localStorage.getItem('theme_id') || 'emerald';
+  });
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
+    const saved = localStorage.getItem('sound_enabled');
+    return saved !== 'false';
+  });
+  
+  const [sortBy, setSortBy] = useState<'default' | 'priceAsc' | 'priceDesc'>('default');
+  const [quickArticleCode, setQuickArticleCode] = useState('');
+  const [quickArticleQty, setQuickArticleQty] = useState(1);
+  const [quickOrderNotice, setQuickOrderNotice] = useState<string | null>(null);
+  const [promoBannerVisible, setPromoBannerVisible] = useState(true);
+  
+  // Custom states added for WH / wholesales adjustments
+  const [isQuickOrderOpen, setIsQuickOrderOpen] = useState<boolean>(() => {
+    return localStorage.getItem('quick_order_open') !== 'false';
+  });
+  
+  const [telegramStatus, setTelegramStatus] = useState<'disconnected' | 'connecting' | 'connected'>(() => {
+    const saved = localStorage.getItem('tg_status');
+    if (saved) return saved as any;
+    return 'disconnected';
+  });
+  
+  });
+  
+  const [isTgModalOpen, setIsTgModalOpen] = useState(false);
+  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [notifications, setNotifications] = useState<Toast[]>([]);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewHoverRating, setReviewHoverRating] = useState(0);
+  const [reviewText, setReviewText] = useState("");
+  const [activeReviews, setActiveReviews] = useState<any[]>([]);
+  const [isReconciliationOpen, setIsReconciliationOpen] = useState(false);
+  const [reconciliationData, setReconciliationData] = useState<any[]>([]);
+  const [isReconciliationLoading, setIsReconciliationLoading] = useState(false);
+  const [historyFilter, setHistoryFilter] = useState<'all' | 'online' | 'pos'>('all');
+
+  const handleAddReview = async (productId: string) => {
+    if (reviewRating === 0 || !reviewText.trim()) return;
+    try {
+      await storefrontApi.addReview(productId, reviewRating, reviewText);
+      SoundEngine.playSuccess();
+      setReviewText("");
+      setReviewRating(0);
+      const list = await storefrontApi.getReviews(productId);
+      setActiveReviews(list);
+    } catch (err: any) {
+      console.error("Failed to add review:", err);
+      addToast("Не удалось отправить отзыв: " + err.message, "warning");
+    }
+  };
+
+  const handleQuickView = async (product: Product) => {
+    SoundEngine.playTick();
+    setQuickViewProduct(product);
+    setActiveReviews([]);
+    try {
+      const list = await storefrontApi.getReviews(product.id);
+      setActiveReviews(list);
+    } catch (err) {
+      console.error("Failed to load reviews:", err);
+    }
+  };
+
+  const handleOpenReconciliation = async () => {
+    SoundEngine.playChime();
+    setIsReconciliationOpen(true);
+    setIsReconciliationLoading(true);
+    try {
+      const data = await storefrontApi.getReconciliation();
+      setReconciliationData(data);
+    } catch (err) {
+      console.error("Failed to load reconciliation data:", err);
+    } finally {
+      setIsReconciliationLoading(false);
+    }
+  };
+  const [catalogFilter, setCatalogFilter] = useState<'all' | 'packaging_unit' | 'single_unit' | 'special_price'>('all');
+  
+  // Integration Logs corresponding to the trading ERP/system payload posts
+  const [systemLogs, setSystemLogs] = useState<string[]>(() => {
+    return [
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  useEffect(() => {
+    const loadCatalog = async () => {
+      try {
+        setIsLoadingProducts(true);
+        const [prods, cats] = await Promise.all([
+          storefrontApi.getProducts(),
+          storefrontApi.getCategories(),
+        ]);
+
+        // Map server product format to storefront Product type
+        // NOTE: priceSell from DB is stored in kopecks (integer). Divide by 100 to get rubles.
+        const mapped: Product[] = prods.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          price: Math.round(p.priceSell / 100),
+          image: p.imageUrl || `https://placehold.co/400x300/f1f5f9/64748b?text=${encodeURIComponent(p.name)}`,
+          categoryId: p.category,
+          unit: p.unit,
+          article: p.sku,
+          rating: 4.8,
+          ratingCount: 12,
+        }));
+
+        const mappedCats: Category[] = [
+          { id: 'all', name: 'Все товары' },
+          ...cats.map((c: any) => ({ id: c.id, name: c.name })),
+        ];
+
+        setProductsData(mapped);
+        setCategoriesData(mappedCats);
+
+        const time = new Date().toLocaleTimeString('ru-RU');
+        setSystemLogs(prev => [
+          `[${time}] [API] Каталог загружен: ${mapped.length} товаров, ${cats.length} категорий.`,
+          ...prev,
+        ]);
+      } catch (err: any) {
+        console.error('Failed to load catalog:', err);
+        const time = new Date().toLocaleTimeString('ru-RU');
+        setSystemLogs(prev => [
+          `[${time}] [API_ERROR] Не удалось загрузить каталог: ${err.message}`,
+          ...prev,
+        ]);
+      } finally {
+        setIsLoadingProducts(false);
+      }
+    };
+
+    loadCatalog();
+  }, []);
+
+  // ── Load user profile from Rvad retail API ────────────────────────────────
+  useEffect(() => {
+    const loadProfile = async () => {
+      const token = localStorage.getItem('storefront_token');
+      if (!token) return;
+
+      try {
+        const result = await storefrontApi.getMe();
+        const user: UserProfile = {
+          name: result.customer.name,
+          phone: result.customer.phone,
+          debt: result.customer.debt ?? 0,
+          creditLimit: result.customer.debtLimit ?? 0,
+          discountPercentage: result.customer.discountPercent ?? 0,
+          telegramLinked: result.customer.telegramLinked ?? false,
+        };
+        localStorage.setItem('logged_in_user', JSON.stringify(user));
+        setCurrentUser(user);
+      } catch (err: any) {
+        console.error('Failed to load profile on mount:', err);
+      }
+        }));
+        setOrdersList(mapped);
+      } catch (err: any) {
+        console.error('Failed to load orders:', err);
+      }
+    };
+
+    loadOrders();
+  }, [currentUser?.id]);
+
+  const t = THEMES[selectedThemeId] || THEMES.emerald;
+
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+
+    // Forgot password flow (still local/UI only — no server endpoint for password reset yet)
+    if (authMode === 'forgot') {
+      if (forgotStep === 'phone') {
+        if (!authPhone.trim()) {
+          setAuthError('Укажите мобильный телефон.');
+          SoundEngine.playTick();
+          return;
+        }
+        setForgotStep('new_password');
+        setAuthPassword('');
+        return;
+      }
+      if (forgotStep === 'new_password') {
+        if (authPassword.length < 4) {
+          setAuthError('Пароль должен содержать не менее 4 символов.');
+          SoundEngine.playTick();
+          return;
+        }
+      setTelegramStatus('disconnected');
+    }
+  }, [currentUser?.telegramLinked]);
+
+  // ── Load real order history when user logs in ────────────────────────────
+  useEffect(() => {
+    if (!currentUser) {
+      setOrdersList([]);
+      return;
+    }
+
+    const loadOrders = async () => {
+      try {
+        const orders = await storefrontApi.getOrders();
+        const mapped: Order[] = orders.map((o: any) => ({
+          id: o.id,
+          date: new Date(o.timestamp).toLocaleString('ru-RU'),
+          status: (o.status || 'processing') as Order['status'],
+          total: o.finalPrice,
+          cashierName: o.cashierName || '',
+          items: (o.items || []).map((item: any) => ({
+            id: item.productId,
+            name: item.productName,
+            price: item.priceSell,
+            quantity: item.quantity,
+          })),
+        }));
+        setOrdersList(mapped);
+      } catch (err: any) {
+        console.error('Failed to load orders:', err);
+      }
+    };
+
+    loadOrders();
+  }, [currentUser?.id]);
+
+  const t = THEMES[selectedThemeId] || THEMES.emerald;
+
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+          const time = new Date().toLocaleTimeString('ru-RU');
+          setSystemLogs(prev => [
+            `[${time}] [AUTH] Пароль успешно сохранен в базе данных`,
+            ...prev
+          ]);
+          setAuthMode('login');
+          setAuthPassword('');
+          setForgotStep('phone');
+        } catch (err: any) {
+          setAuthError(err.message || 'Не удалось обновить пароль.');
+          SoundEngine.playTick();
+        }
+        return;
+      }
+    }
+        telegramLinked: result.customer.telegramLinked ?? false,
+      };
+
+      localStorage.setItem('logged_in_user', JSON.stringify(user));
+      setCurrentUser(user);
+
+      SoundEngine.playSuccess();
+      const time = new Date().toLocaleTimeString('ru-RU');
+      setSystemLogs(prev => [
+
+    if (authPassword.length < 4) {
+      setAuthError('Пароль должен содержать не менее 4 символов.');
+      SoundEngine.playTick();
+      return;
+    }
+
+    // Real API call — register or login
+    try {
+      let result: any;
+      if (authMode === 'signup') {
+        result = await storefrontApi.register(authName, authPhone, authPassword);
+      } else {
+        result = await storefrontApi.login(authPhone, authPassword);
+      }
+
+      // Persist JWT and user profile
+      localStorage.setItem('storefront_token', result.token);
+
+      // Map server customer fields → storefront UserProfile shape
+      const user: UserProfile = {
+        name: result.customer.name,
+        phone: result.customer.phone,
+        debt: result.customer.debt ?? 0,
+        creditLimit: result.customer.debtLimit ?? 0,
+        discountPercentage: result.customer.discountPercent ?? 0,
+        telegramLinked: result.customer.telegramLinked ?? false,
+      };
+
+      localStorage.setItem('logged_in_user', JSON.stringify(user));
+      setCurrentUser(user);
+
+      SoundEngine.playSuccess();
+      const time = new Date().toLocaleTimeString('ru-RU');
+      setSystemLogs(prev => [
+        `[${time}] [AUTH] ${authMode === 'signup' ? 'Регистрация' : 'Вход'} успешен. Клиент: ${user.name}`,
+        ...prev
+      ]);
+    } catch (err: any) {
+      SoundEngine.playTick();
+      setAuthError(err.message || 'Ошибка авторизации.');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            )}
+
+            {authMode === 'forgot' && forgotStep === 'phone' && (
+              <div className="space-y-4">
+                <div className="text-center text-sm font-semibold mb-2 space-y-1">
+                  <p className={t.textClass}>Восстановление пароля</p>
+                  <p className={`text-xs ${t.mutedTextClass}`}>
+                    Мы отправим код сброса пароля в наш Telegram.
+                  </p>
+                </div>
+                <div className="space-y-1.5">
+                  <label className={`block text-[10px] font-black uppercase tracking-wider ${t.mutedTextClass}`}>Контактный телефон</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                      <Phone className="w-4 h-4" />
+                    </span>
+                    <input
+                      type="tel"
+                      value={authPhone}
+                      onChange={e => setAuthPhone(e.target.value)}
+                      placeholder="+7 (999) 000-00-00"
+                      className={`w-full pl-10 pr-4 py-3 rounded-2xl border border-black/10 dark:border-white/10 outline-none font-medium text-sm transition-all focus:ring-2 ${t.ringClass} ${t.inputBgClass} ${t.textClass}`}
+                      required
+                    />
+                  </div>
+   
+
+
+
+
+                      className={`w-full pl-10 pr-4 py-3 rounded-2xl border border-black/10 dark:border-white/10 outline-none font-medium text-sm transition-all focus:ring-2 ${t.ringClass} ${t.inputBgClass} ${t.textClass}`}
+                      required
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  className={`w-full font-black text-xs uppercase tracking-widest rounded-2xl py-4 transition-all flex items-center justify-center gap-2 active:scale-[0.98] mt-6 cursor-pointer text-white shadow-sm bg-[#0088cc] hover:bg-[#0077b5]`}
+                >
+                  <Send className="w-4 h-4" />
+                Вход
+              </button>
+              <button
+                type="button"
+                onClick={() => { SoundEngine.playTick(); setAuthMode('signup'); setAuthError(''); }}
+                className={`flex-1 py-3 text-xs font-black uppercase tracking-wider transition-all cursor-pointer border-b-2 ${authMode === 'signup' ? `border-gray-800 dark:border-white shadow-none ${t.textClass}` : `border-transparent ${t.mutedTextClass} hover:opacity-100`}`}
+              >
+                Регистрация
+              </button>
+            </div>
+          )}
+
+          <form onSubmit={handleAuthSubmit} className="space-y-4">
+            {authError && (
+              <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/10 border border-red-100 dark:border-red-900/45 text-xs text-red-600 dark:text-red-400 font-semibold flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{authError}</span>
+              </div>
+            )}
+
+            {authMode === 'forgot' && forgotStep === 'phone' && (
+              <div className="space-y-4">
+                <div className="text-center text-sm font-semibold mb-2 space-y-1">
+                  <p className={t.textClass}>Восстановление пароля</p>
+                  <p className={`text-xs ${t.mutedTextClass}`}>
+                    Укажите ваш контактный телефон д
+                      placeholder="Например, 5829"
+                      className={`w-full pl-10 pr-4 py-3 rounded-2xl border border-black/10 dark:border-white/10 outline-none font-medium text-sm transition-all focus:ring-2 ${t.ringClass} ${t.inputBgClass} ${t.textClass}`}
+                      required
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  className={`w-full font-black text-xs uppercase tracking-widest rounded-2xl py-4 transition-all flex items-center justify-center gap-2 active:scale-[0.98] mt-6 cursor-pointer text-white shadow-sm ${t.accentBgClass} ${t.accentHoverBgClass}`}
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  Подтвердить код
+                </button>
+                <div className="text-center pt-2">
+                  <button type="button" onClick={() => setAuthMode('login')} className={`text-[10px] font-black uppercase tracking-wider ${t.mutedTextClass} hover:opacity-100 transition-opacity cursor-pointer`}>Отменить</button>
+
+
+
+
+                  <label className={`block text-[10px] font-black uppercase tracking-wider ${t.mutedTextClass}`}>Новый пароль</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                      <Lock className="w-4 h-4" />
+                    </span>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                </div>
+              </div>
+            )}
+
+            {authMode === 'forgot' && forgotStep === 'new_password' && (
+              <div className="space-y-4">
+                <div className="text-center text-sm font-semibold mb-2 space-y-1">
+                  <p className={t.textClass}>Новый пароль</p>
+                  <p className={`text-xs ${t.mutedTextClass}`}>
+                    Придумайте новый надежный пароль.
+                  </p>
+                </div>
+                <div className="space-y-1.5">
+                  <label className={`block text-[10px] font-black uppercase tracking-wider ${t.mutedTextClass}`}>Новый пароль</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                      <Lock className="w-4 h-4" />
+                    </span>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={authPassword}
+                      onChange={e => setAuthPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className={`w-full pl-10 pr-12 py-3 rounded-2xl border border-black/10 dark:border-white/10 outline-none font-medium text-sm transition-all focus:ring-2 ${t.ringClass} ${t.inputBgClass} ${t.textClass}`}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+  }, [selectedThemeId, t.bodyClass]);
+
+  useEffect(() => {
+    localStorage.setItem('sound_enabled', String(soundEnabled));
+  }, [soundEnabled]);
+
+  // Audio trigger utility wrapper
+  const handleTabSwitch = (tab: any) => {
+    SoundEngine.playTick();
+    setActiveTab(tab);
+  };
+
+  const handleToggleSound = () => {
+    const newVal = !soundEnabled;
+    setSoundEnabled(newVal);
+    localStorage.setItem('sound_enabled', String(newVal));
+    if (newVal) {
+      setTimeout(() => SoundEngine.playChime(), 100);
+    }
+  };
+
+  const toggleFavorite = (productId: string) => {
+    SoundEngine.playChime();
+    setFavorites(prev => {
+      if (prev.includes(productId)) {
+        return prev.filter(id => id !== productId);
+      } else {
+        return [...prev, productId];
+      }
+    });
+  };
+
+  // Cart actions with crisp sounds
+  const addToCart = (product: Product) => {
+    SoundEngine.playChime();
+    setCart(prev => {
+      const existing = prev.find(item => item.id === product.id);
+      if (existing) {
+        return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
+      }
+      return [...prev, { ...product, quantity: 1 }];
+    });
+  };
+
+  const updateQuantity = (id: string, delta: number) => {
+    SoundEngine.playTick();
+    setCart(prev => prev.map(item => {
+      if (item.id === id) {
+        const newQ = item.quantity + delta;
+        return { ...item, quantity: Math.max(0, newQ) };
+      }
+      return item;
+    }).filter(item => item.quantity > 0));
+  };
+
+  const handleRepeatOrder = (order: Order) => {
+    SoundEngine.playSuccess();
+    setCart(prev => {
+      let updated = [...prev];
+      order.items.forEach(orderItem => {
+        const prod = PRODUCTS.find(p => p.id === orderItem.id);
+        if (prod) {
+          const existing = updated.find(u => u.id === orderItem.id);
+          if (existing) {
+            existing.quantity += orderItem.quantity;
+          } else {
+            updated.push({ ...prod, quantity: orderItem.quantity });
+          }
+        }
+      });
+      return updated;
+    });
+    setQuickOrderNotice(`Товары из заказа ${order.id} добавлены в корзину!`);
+    setActiveTab('cart');
+    setTimeout(() => setQuickOrderNotice(null), 4000);
+  };
+
+  // Blitz Quick Order Form Logic
+  const handleQuickOrderSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickArticleCode) return;
+
+    const matchedProd = PRODUCTS.find(p => 
+      p.article?.toLowerCase() === quickArticleCode.trim().toLowerCase()
+    );
+
+    if (matchedProd) {
+      SoundEngine.playSuccess();
+      setCart(prev => {
+        const existing = prev.find(item => item.id === matchedProd.id);
+        if (existing) {
+          return prev.map(item => item.id === matchedProd.id ? { ...item, quantity: item.quantity + quickArticleQty } : item);
+        }
+        return [...prev, { ...matchedPr
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        else if (error.code === 3) errorMsg = "Превышено время ожидания GPS";
+        
+        setSystemLogs(prev => [
+          `[${timestamp}] [GEOLOCATION_WARNING] Не удалось получить координаты: ${errorMsg}.`,
+          `[${timestamp}] [GEOLOCATION_FALLBACK] Автоматически подобран оптимальный адрес доставки партнера: ${randomSimulatedAddr}`,
+          ...prev
+        ]);
+      },
+      { enableHighAccuracy: true, timeout: 6000 }
+    );
+  };
+
+  const handleCheckoutSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const orderItems = cart.map(item => ({
+        productId: item.id,
+        quantity: item.quantity,
+      }));
+
+      const result = await storefrontApi.placeOrder({
+        items: orderItems,
+        orderType,
+        deliveryAddress: orderType === 'delivery' ? customerInfo.address : undefined,
+        comment: customerInfo.comment || undefined,
+        paymentMethod: 'CASH',
+      });
+
+      SoundEngine.playSuccess();
+      setOrderNumber(result.orderId);
+
+      // Add to local order list immediately so the History tab updates right away
+      const newOrderRecord: Order = {
+        id: result.orderId,
+        date: 'Сегодня, ' + new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+        status: 'processing',
+        total: Math.round(result.finalPrice / 100), // kopecks → rubles
+        items: cart.map(item => ({
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          >
+            <div className="flex-1 space-y-1 z-10">
+              <span className="inline-block bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase mb-2">Акция Недели</span>
+              <h3 className="text-xl font-black tracking-tight leading-none text-white flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-yellow-300" /> Скидки на хозяйственные мелочи до 10%
+              </h3>
+              <p className="text-sm opacity-90 font-normal">Ваша персональная скидка {currentUser ? currentUser.discountPercentage : 5}% суммируется автоматически!</p>
+            </div>
+            <div className="flex items-center gap-3 z-10 self-stretch md:self-auto justify-end">
+              <button 
+                onClick={() => setPromoBannerVisible(false)}
+                className="bg-white/10 hover:bg-white/20 transition-all rounded-full p-2 text-white outline-none active:scale-95"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Grid of Search, Sorting, and Sound indicators */}
+      <div className="px-4 md:px-6 space-y-3">
+        if (indexToUpdate === -1) return prevOrders;
+
+        const updatedOrders = [...prevOrders];
+        const order = updatedOrders[indexToUpdate];
+        
+        let newStatus: Order['status'] = order.status;
+        let message = "";
+
+        if (order.status === 'processing') {
+          newStatus = 'shipped';
+          message = `Ваш заказ ${order.id} передан в службу доставки!`;
+        } else if (order.status === 'shipped') {
+          newStatus = 'delivered';
+          message = `Заказ ${order.id} успешно доставлен!`;
+        }
+
+        if (message) {
+          addToast(message, 'info', order.id);
+          const time = new Date().toLocaleTimeString('ru-RU');
+          setSystemLogs(logs => [
+            `[${time}] [STATUS_UPDATE] Заказ ${order.id} сменил статус на: ${newStatus}`,
+            ...logs
+          ]);
+        }
+
+        updatedOrders[indexToUpdate] = { ...order, status: newStatus };
+        return updatedOrders;
+      });
+    }, 15000); // Check every 15 seconds for demo purposes
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const toggleOrder = (id: string) => {
+    SoundEngine.playTick();
+    setExpandedOrders(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const navItems = [
+    { id: 'catalog', label: 'Ката
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        `[${timestamp}] [ORDER] Заказ ${result.orderId} создан в базе Rvad retail. Сумма: ${Math.round(result.finalPrice / 100)} руб.`,
+        `[${timestamp}] [STOCK] Списание товаров со склада выполнено автоматически.`,
+        ...prev,
+      ]);
+    } catch (err: any) {
+      SoundEngine.playTick();
+      if (err.message === 'DEBT_LIMIT_EXCEEDED') {
+        addToast('Превышен лимит долга. Свяжитесь с менеджером.', 'warning');
+      } else {
+        addToast(`Ошибка оформления: ${err.message}`, 'warning');
+      }
+    }
+  };
+
+  const addToast = (message: string, type: Toast['type'] = 'info', orderId?: string) => {
+    const id = Math.random().toString(36).substring(2, 9);
+    const newToast = { id, message, type, orderId };
+    setToasts(prev => [...prev, newToast]);
+    setNotifications(prev => [newToast, ...prev].slice(0, 20)); // Keep last 20
+    
+    // Play sound if notification
+    if (type === 'success') SoundEngine.playSuccess();
+    else SoundEngine.playChime();
+
+    // Auto-remove
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 5000);
+  };
+
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => { setSearchQuery(''); SoundEngine.playTick(); }}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Sorter Pillet */}
+          <div className="flex gap-2">
+            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-2xl border ${t.cardClass} shadow-sm`}>
+              <ArrowUpDown className="w-4 h-4 opacity-70" />
+              <select 
+                value={sortBy} 
+                onChange={(e) => { setSortBy(e.target.value as any); SoundEngine.playTick(); }}
+                className={`bg-transparent text-xs font-bold uppercase tracking-wider border-none outline-none cursor-pointer pr-1 py-1 ${t.textClass}`}
+              >
+                <option value="default">Сортировка</option>
+                <option value="priceAsc">Сначала дешевые</option>
+                <option value="priceDesc">Сначала дорогие</option>
+              </select>
+            </div>
+
+            <button
+              onClick={() => { setIsNotificationsOpen(!isNotificationsOpen); SoundEngine.playTick(); }}
+              className={`p-3 rounded-2xl border flex items-center justify-center transition-all shadow-sm ${t.cardClass} hover:opacity-95 active:scale-95 relative`}
+            >
+              <Bell className={`w-5 h-5 ${t.id === 'dark' ? 'text-violet-400' : 'text-gray-950'}`} />
+              {notifications.length > 0 && (
+                <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-[#1e1b4b]" />
+              )}
+            </button>
+
+            {/* In-app sound indicator quick-control */}
+            <button
+              onClick={handleToggleSound}
+              title={soundEnabled ? "Выключить звук" : "Включить звук"}
+              className={`p-3 rounded-2xl border flex items-center justify-center transition-all shadow-sm ${t.cardClass} hover:opacity-95 active:scale-95`}
+            >
+              {soundEnabled ? (
+                <Volume2 className={`w-5 h-5 ${t.id === 'dark' ? 'text-violet-400' : 'text-gray-950'}`} />
+              ) : (
+                <VolumeX className="w-5 h-5 text-gray-400" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Quick Article Order Form (Extremely comfortable for variety store clients!) */}
+        <div className={`rounded-2xl border shadow-sm ${t.cardHighlightClass} ${t.borderClass} overflow-hidden`}>
+          <button
+            type="button"
+            onClick={() => { SoundEngine.playTick(); setIsQuickOrderOpen(!isQuickOrderOpen); }}
+            className="w-full text-left p-4 flex items-center justify-be
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    >
+                      <Minus className="w-3.5 h-3.5" />
+                    </button>
+                    <span className="px-3 text-xs font-bold text-gray-900">{quickArticleQty} шт</span>
+                    <button 
+                      type="button" 
+                      onClick={() => { SoundEngine.playTick(); setQuickArticleQty(q => q + 1); }}
+                      className="p-1 text-gray-400 hover:text-gray-900"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-sm shrink-0 active:scale-95 cursor-pointer ${t.accentBgClass} ${t.accentTextClass} ${t.accentHoverBgClass}`}
+                  >
+                    Добавить в корзину
+                  </button>
+                </form>
+
+                {quickOrderNotice && (
+                  <motion.div 
+                     initial={{ opacity: 0, y: 5 }} 
+                     animate={{ opacity: 1, y: 0 }} 
+                     className={`text-xs mt-3.5 font-bold p-2.5 rounded-xl border flex items-center gap-2 ${quickOrderNotice.startsWith('Ошибка') ? 'bg-red-50 text-red-700 border-red-100' : 'bg-green-50 text-green-700 border-green-100'}`}
+                  >
+                    {quickOrderNotice.startsWith('Ошибка') ? <AlertCircle className="w-4 h-4 shrink-0" /> : <CheckCircle className="w-4 h-4 shrink-0" />}
+                    {quickOrderNotice}
+                  </motion.div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Categories Horizontal Slider */}
+      <div className="px-4 md:px-6 flex overflow-x-auto gap-2 pb-2 scrollbar-none snap-x">
+        {CATEGORIES.map(cat => (
+          <button
+            key={cat.id}
+            onClick={() => { SoundEngine.playTick(); setActiveCategoryId(cat.id); }}
+            className={`whitespace-nowrap px-5 py-2.5 rounded-[1.25rem] font-bold transition-all text-sm snap-start outline-none ${
+              activeCategoryId === cat.id 
+                ? t.pillSelectedClass
+                : `${t.cardClass} ${t.mutedTextClass} shadow-sm ring-1 ring-black/5 hover:opacity-90`
+            }`}
+          >
+            {cat.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Wholesaler Quick Smart Filters Row */}
+      <div className="px-4 md:px-6 flex overflow-x-auto gap-1.5 pb-1 select-none scrollbar-none">
+        {[
+          { id: 'all', label: '⚡️ Все фасовки' },
+          { id: 'packaging_unit', label: '📦 Только упаковками (опт)' },
+          { id: 'single_unit', label: '🧼 Поштучно / рулоны' },
+          { id: 'special_price', label: '🔥 Бюджет до 150 ₽' }
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                  loading="lazy"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                />
+                {product.article && (
+                  <div className="absolute top-2 left-2 bg-white/95 backdrop-blur-sm px-2 py-0.5 rounded-lg text-[9px] font-mono font-bold tracking-tight text-gray-800 shadow-sm border border-gray-100">
+                    {product.article}
+                  </div>
+                )}
+                {/* Heart / Favorite Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleFavorite(product.id);
+                  }}
+                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center text-rose-500 hover:scale-110 active:scale-90 transition-all shadow-xs z-10 cursor-pointer"
+                  title="Добавить в избранное"
+                >
+                  <Heart className={`w-4 h-4 transition-colors ${favorites.includes(product.id) ? 'fill-rose-500 text-rose-500' : 'text-gray-400'}`} />
+                </button>
+              </div>
+              <div className="px-2 pb-2 flex flex-col flex-1">
+                <div className="flex items-center gap-1 mb-1">
+                  <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                  <span className={`text-[10px] font-bold ${t.mutedTextClass}`}>{product.rating || 4.8}</span>
+                  <span className={`text-[10px] opacity-60 ${t.mutedTextClass}`}>({product.ratingCount || Math.floor(Math.random() * 50) + 10})</span>
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        })}
+      </div>
+      
+      {filteredProducts.length === 0 && (
+        <div className="text-center py-20 px-4">
+          <div className="bg-gray-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+             <Package className="w-8 h-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900">Ничего не найдено</h3>
+          <p className="text-gray-500 mt-1 text-sm max-w-sm mx-auto">По запросу "{searchQuery}" товары отсутствуют в каталоге.</p>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderFavorites = () => {
+    const favoriteProducts = PRODUCTS.filter(product => favorites.includes(product.id));
+
+    return (
+      <div className="space-y-6">
+        <div className="px-4 md:px-6 flex justify-between items-center">
+          <div>
+            <h2 className={`text-2xl font-bold tracking-tight ${t.textClass}`}>Избранные товары</h2>
+            <p className={`text-xs ${t.mutedTextClass} mt-0.5`}>Товары, которые вы сохранили для быстрого доступа</p>
+          </div>
+          {favoriteProducts.length > 0 && (
+            <button
+              onClick={() => {
+                SoundEngine.playTick();
+                setFavorites([]);
+              }}
+              className="text-xs font-s
+            >
+              Очистить все
+            </button>
+          )}
+        </div>
+
+        {favoriteProducts.length === 0 ? (
+          <div className={`mx-4 md:mx-6 text-center py-20 rounded-3xl border shadow-sm ${t.cardClass}`}>
+            <div className="bg-rose-50 text-rose-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-100">
+              <Heart className="w-8 h-8 fill-rose-500/20" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Список избранного пуст</h3>
+            <p className="text-gray-500 mt-1 mb-6 text-sm max-w-sm mx-auto">Нажимайте сердечки на карточках товаров в каталоге, чтобы быстро находить их здесь.</p>
+            <button 
+              onClick={() => handleTabSwitch('catalog')}
+              className={`font-semibold rounded-full px-8 py-3 transition-colors ${t.accentBgClass} ${t.accentTextClass} ${t.accentHoverBgClass}`}
+            >
+              В каталог
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-4 md:px-6">
+            {favoriteProducts.map(product => {
+              const quantity = cart.find(i => i.id === product.id)?.quantity || 0;
+              return (
+                <div 
+                  key={product.id} 
+                  className={`rounded-[1.5rem] p-2 shadow-sm border flex flex-col transition-all duration-300 hover:shadow-md group relative ${t.cardClass} ${t.cardHighlightClass}`}
+                >
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+              <Heart className="w-8 h-8 fill-rose-500/20" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Список избранного пуст</h3>
+            <p className="text-gray-500 mt-1 mb-6 text-sm max-w-sm mx-auto">Нажимайте сердечки на карточках товаров в каталоге, чтобы быстро находить их здесь.</p>
+            <button 
+              onClick={() => handleTabSwitch('catalog')}
+            <button 
+              onClick={() => handleTabSwitch('catalog')}
+              className={`font-semibold rounded-full px-8 py-3 transition-colors ${t.accentBgClass} ${t.accentTextClass} ${t.accentHoverBgClass}`}
+            >
+              В каталог
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-4 md:px-6">
+            {favoriteProducts.map(product => {
+              const quantity = cart.find(i => i.id === product.id)?.quantity || 0;
+              return (
+                <div 
+                  key={product.id} 
+                  className={`rounded-[1.5rem] p-2 shadow-sm border flex flex-col transition-all duration-300 hover:shadow-md group relative ${t.cardClass} ${t.cardHighlightClass}`}
+                >
+                  <div className="aspect-square bg-white rounded-2xl overflow-hidden relative mb-2 flex items-center justify-center border border-black/5">
+                    <img 
+                      src={product.image} 
+                      alt={product.name} 
+                      loading="lazy"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                    />
+                    {product.article && (
+                      <div className="absolute top-2 left-2 bg-white/95 backdrop-blur-sm px
+                        {product.article}
+                      </div>
+                    )}
+                    {/* Heart / Favorite Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(product.id);
+                      }}
+                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center text-rose-500 hover:scale-110 active:scale-95 transition-all shadow-xs z-10 cursor-pointer animate-none"
+                    >
+                      <Heart className="w-4 h-4 fill-rose-500 text-rose-500" />
+                    </button>
+                  </div>
+                  <div className="px-2 pb-2 flex flex-col flex-1">
+                    <h3 className={`text-xs sm:text-sm font-semibold tracking-tight leading-snug mb-1 line-clamp-2 ${t.textClass}`}>
+                      {product.name}
+                    </h3>
+                    
+                    <div className="mt-auto pt-3 flex items-end justify-between gap-2 border-t border-black/5">
+                      <div>
+                        <div className={`font-black text-sm sm:text-base leading-none ${t.textClass}`}>
+                          {formatPrice(product.price)}
+                        </div>
+                        {product.unit && (
+                          <div className={`text-[10px] font-semibold mt-1 ${t.mutedTextClass}`}>
+                            за {product.unit}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {quantity > 0 ? (
+                        <div className="flex items-center gap-1.5 p-1 bg-black/5 rounded-full select-none shrink-0 border border-black/5">
+                          <button 
+                            onClick=        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="lg:col-span-2 space-y-3">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const renderCart = () => (
+    <div className="px-4 md:px-6 max-w-3xl mx-auto">
+      <h2 className={`text-2xl font-bold tracking-tight mb-6 ${t.textClass}`}>Корзина товаров</h2>
+      
+      {cart.length === 0 ? (
+        <div className={`text-center py-20 rounded-3xl border shadow-sm ${t.cardClass}`}>
+          <div className="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ring-8 ring-gray-100/50">
+            <ShoppingCart className="w-8 h-8 text-gray-400" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Здесь пока пусто</h2>
+          <p className="text-gray-500 mb-8 max-w-xs mx-auto text-sm">Выберите хозяйственные или бытовые товары в каталоге, чтобы оформить заказ.</p>
+          <button 
+            onClick={() => handleTabSwitch('catalog')}
+            className={`font-semibold rounded-full px-8 py-3 transition-colors ${t.accentBgClass} ${t.accentTextClass} ${t.accentHoverBgClass}`}
+          >
+            В каталог
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="lg:col-span-2 space-y-3">
+             {cart.map(item => (
+                <div key={item.id} className={`rounded-3xl p-3 shadow-sm border flex gap-4 items-center ${t.cardClass}`}>
+                  <div className="w-16 h-16 bg-white border border-black/5 rounded-2xl overflow-hidden flex-shrink-0 flex items-center justify-center">
+          <div className="lg:col-span-1">
+             <div className={`rounded-3xl p-6 shadow-sm border sticky top-24 ${t.cardClass} ${t.cardHighlightClass}`}>
+                <h3 className={`text-lg font-bold mb-6 ${t.textClass}`}>Сводка Заказа</h3>
+                <div className={`space-y-3 text-sm font-medium pb-6 border-b ${t.borderClass} ${t.mutedTextClass}`}>
+                  <div class
+                  </div>
+                </div>
+             ))}
+          </div>
+
+          <div className="lg:col-span-1">
+             <div className={`rounded-3xl p-6 shadow-sm border sticky top-24 ${t.cardClass} ${t.cardHighlightClass}`}>
+                <h3 className={`text-lg font-bold mb-6 ${t.textClass}`}>Сводка Заказа</h3>
+                <div className={`space-y-3 text-sm font-medium pb-6 border-b ${t.borderClass} ${t.mutedTextClass}`}>
+                  <div className="flex justify-between"><span>Товары ({cartItemsCount})</span><span className={t.textClass}>{formatPrice(cartTotal)}</span></div>
+                  {(currentUser?.discountPercentage || 0) > 0 && (
+                     <div className="flex justify-between text-green-600 font-bold">
+                       <span>Ваша скидка ({currentUser?.discountPercentage || 0}%)</span>
+                       <span>-{formatPrice(cartTotal * ((currentUser?.discountPercentage || 0) / 100))}</span>
+                     </div>
+                  )}
+                </div>
+                <div className="flex justify-between items-end mt-6 mb-8">
+                </button>
+             </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const getStatusDetails = (status: string) => {
+    switch (status) {
+      case 'processing': return { label: 'Обрабатывается', step: 1, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-500' };
+      case 'shipping': return { label: 'В пути', step: 2, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-500' };
+    </div>
+  );
+
+  const getStatusDetails = (status: string) => {
+    switch (status) {
+      case 'processing': return { label: 'Обрабатывается', step: 1, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-500' };
+      case 'shipping': return { label: 'В пути', step: 2, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-500' };
+      case 'delivered': return { label: 'Доставлен', step: 3, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-500' };
+      case 'cancelled': return { label: 'Отменен', step: 0, color: 'text-red-600 dark:text-red-400', bg: 'bg-red-500' };
+      default: return { label: 'Обрабатывается', step: 1, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-500' };
+  );
+
+  const getStatusDetails = (status: string, orderType?: 'delivery' | 'pickup') => {
+    const isPickup = orderType === 'pickup';
+    switch (status) {
+      case 'processing': return { label: 'Обрабатывается', step: 1, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-500' };
+      case 'shipping': return { label: isPickup ? 'Готов к выдаче' : 'В пути', step: 2, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-500' };
+      case 'delivered': return { label: isPickup ? 'Выдан' : 'Доставлен', step: 3, color: 'text-emerald-600 dark:text-emerald-450', bg: 'bg-emerald-500' };
+      case 'cancelled': return { label: 'Отменен', step: 0, color: 'text-red-600 dark:text-red-400', bg: 'bg-red-500' };
+      default: return { label: 'Обрабатывается', step: 1, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-500' };
+    }
+  };
+
+  const renderHistory = () => (
+    <div className="max-w-3xl mx-auto px-4 md:px-6">
+      <h2 className={`text-2xl font-bold tracking-tight mb-6 ${t.textClass}`}>История заказов</h2>
+      
+      {/* History Tabs */}
+      <div className="flex gap-2 mb-6 bg-black/5 dark:bg-white/5 p-1 rounded-2xl shrink-0 select-none">
+        {[
+          { id: 'all', label: 'Все' },
+          { id: 'online', label: 'Онлайн' },
+          { id: 'pos', label: 'Самовывоз' },
+        ].map(opt => (
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="space-y-4">
+        {filteredOrders.map(order => {
+          const isOnline = order.cashierName && (order.cashierName.startsWith('Storefront:') || order.cashierName.includes('Storefront'));
+          const statusInfo = isOnline ? getStatusDetails(order.status) : { label: 'Выдан (Касса)', step: 0, color: 'text-emerald-600 dark:text-emerald-450', bg: 'bg-emerald-500' };
+          
+          return (
+           <div key={order.id} className={`rounded-3xl shadow-sm border overflow-hidden transition-shadow hover:shadow-md ${t.cardClass}`}>
+             >
+               <div className="flex items-center justify-between w-full">
+                 <div className="flex items-center gap-4">
+                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${t.accentLightBgClass} ${t.accentLightTextClass}`}>
+                     <Receipt className="w-6 h-6" />
+                   </div>
+                   <div>
+                     <div className={`font-black tracking-tight text-base ${t.textClass}`}>{order.id}</div>
+                     <div className={`text-xs font-medium mt-0.5 ${t.mutedTextClass}`}>{order.date}</div>
+                     <div className={`sm:hidden text-[10px] uppercase tracking-wider font-extrabold ${statusInfo.color} mt-1 flex items-center gap-1`}>
+                       {statusInfo.step < 3 && statusInfo.step > 0 && <span className={`w-1.5 h-1.5 rounded-full ${statusInfo.bg} animate-pulse`}></span>}
+                       {statusInfo.label}
+                     </div>
+                   </div>
+                 </div>
+                 
+                 <div className="flex items-center gap-5">
+                   <div className="text-right hidden sm:block">
+                     <div className={`font-black text-sm sm:text-base ${t.textClass}`}>{formatPrice(order.total)}</div>
+                     <div className={`text-[10px] uppercase tracking-wider font-extrabold ${statusInfo.color} mt-1 flex items-center justify-end gap-1`}>
+                       {statusInfo.step < 3 && statusInfo.step > 0 && <span className={`w-1.5 h-1.5 rounded-full ${statusInfo.bg} animate-pulse`}></span>}
+                       {statusInfo.label}
+                     </div>
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="space-y-4">
+                       {statusInfo.step < 3 && statusInfo.step > 0 && <span className={`w-1.5 h-1.5 rounded-full ${statusInfo.bg} animate-pulse`}></span>}
+                       {statusInfo.label}
+                     </div>
+                   </div>
+                   <motion.div animate={{ rotate: expandedOrders[order.id] ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                     <ChevronDown className="w-5 h-5 opacity-70" />
+                   </motion.div>
+                 </div>
+               </div>
+
+               {/* Progress bar */}
+               {statusInfo.step > 0 && (
+                 <div className="w-full mt-1">
+                   <div className="flex justify-between mb-2 px-1">
+                     <span className={`text-[9px] font-bold uppercase tracking-wider ${statusInfo.step >= 1 ? t.textClass : t.mutedTextClass + ' opacity-50'}`}>Обработка</span>
+                     <span className={`text-[9px] font-bold uppercase tracking-wider ${statusInfo.step >= 2 ? t.textClass : t.mutedTextClass + ' opacity-50'}`}>В пути</span>
+                     <span className={`text-[9px] font-bold uppercase tracking-wider ${statusInfo.step >= 3 ? t.textClass : t.mutedTextClass + ' opacity-50'}`}>Доставлен</span>
+                   </div>
+                   <div className="h-1.5 w-full bg-black/5 dark:bg-white/10 rounded-full overflow-hidden flex">
+                      <div className={`h-full transition-all duration-1000 ease-out rounded-full ${statusInfo.bg}`} style={{ width: statusInfo.step === 1 ? '33.3%' : statusInfo.step === 2 ? '66.6%' : '100%' }} />
+                   </div>
+                 </div>
+               )}
+                   exit={{ height: 0, opacity: 0 }}
+                   className={`overflow-hidden border-t ${t.cardHighlightClass} ${t.borderClass}`}
+                 >
+                   <div className="p-5">
+                     <div className="flex justify-between items-center mb-4">
+                       <span className={`text-[11px] font-black uppercase tracking-wider ${t.mutedTextClass}`}>Купленные позиции</span>
+                       <button 
+                         onClick={() => handleRepeatOrder(order)}
+                         className={`px-3.5 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all scale-95 active:scale-90 ${t.accentBgClass} ${t.accentTextClass} ${t.accentHoverBgClass}`}
+                       >
+                     <ChevronDown className="w-5 h-5 opacity-70" />
+                   </motion.div>
+                 </div>
+               </div>
+
+               {/* Progress bar */}
+               {statusInfo.step > 0 && (
+                 <div className="w-full mt-1">
+                   <div className="flex justify-between mb-2 px-1">
+                     <span className={`text-[9px] font-bold uppercase tracking-wider ${statusInfo.step >= 1 ? t.textClass : t.mutedTextClass + ' opacity-50'}`}>Обработка</span>
+                     <span className={`text-[9px] font-bold uppercase tracking-wider ${statusInfo.step >= 2 ? t.textClass : t.mutedTextClass + ' opacity-50'}`}>В пути</span>
+                     <span className={`text-[9px] font-bold uppercase tracking-wider ${statusInfo.step >= 3 ? t.textClass : t.mutedTextClass + ' opacity-50'}`}>Доставлен</span>
+                   </div>
+                   <div className="h-1.5 w-full bg-black/5 dark:bg-white/10 rounded-full overflow-hidden flex">
+                      <div className={`h-full transition-all duration-1000 ease-out rounded-full ${statusInfo.bg}`} style={{ width: statusInfo.step === 1 ? '33.3%' : statusInfo.step === 2 ? '66.6%' : '100%' }} />
+                   </div>
+                 </div>
+               )}
+             </button>
+             
+             <AnimatePresence>
+               {expandedOrders[order.id] && (
+                 <motion.div
+                   initial={{ height: 0, opacity: 0 }}
+                   animate={{ height: 'auto', opacity: 1 }}
+                   exit={{ height: 0, opacity: 0 }}
+                   className={`overflow-hidden border-t ${t.cardHighlightClass} ${t.borderClass}`}
+                 >
+                   <div className="p-5">
+                     <div className="flex justify-between items-center mb-4">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      </div>
+    </div>
+  );
+
+  const renderProfile = () => (
+    <div className="max-w-3xl mx-auto px-4 md:px-6 space-y-6">
+      <h2 className={`text-2xl font-bold tracking-tight mb-2 ${t.textClass}`}>Личный кабинет</h2>
+      
+      {/* Dynamic Theme Selection Swapper */}
+      <div className={`rounded-3xl p-5 md:p-6 border shadow-sm ${t.cardClass}`}>
+        <h3 className={`text-sm font-black uppercase tracking-wider mb-4 flex items-center gap-2 ${t.textClass}`}>
+          <Sparkles className="w-4 h-4 text-amber-500" /> Выберите оформление интерфейса
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {Object.values(THEMES).map(themeOption => {
+            const isSel = selectedThemeId === themeOption.id;
+            return (
+              <button
+                key={themeOption.id}
+                onClick={() => {
+                  SoundEngine.playChime();
+                  setSelectedThemeId(themeOption.id);
+                }}
+                className={`py-3 px-4 rounded-2xl flex flex-col items-center justify-center text-center transition-all border outline-none cursor-pointer ${isSel ? 'border-gray-900 bg-gray-900 text-white shadow-sm scale-102' : 'border-gray-200 bg-white text-gray-800 hover:bg-gray-50'}`}
+              >
+                <div className={`w-6 h-6 rounded-full mb-1 border shadow-inner ${themeOption.id 
+                  setTelegramStatus('connected');
+                  const time = new Date().toLocaleTimeString('ru-RU');
+                  setSystemLogs(prev => [
+                    `[${time}] [SUCCESS] Webhook принят! Chat ID #2049104 успешно связан с ${currentUser ? currentUser.name : 'Иван Иванов'}`,
+                    `[${time}] [TG_API] Клиент перешел по внешней глубокой ссылке Telegram-бота: melochey_control_bot`,
+                    ...prev
+                  ]);
+                }
+              }}
+              className={`w-full sm:w-auto px-6 py-2.5 rounded-full font-bold text-xs uppercase tracking-widest transition-all active:scale-95 cursor-pointer ${telegramStatus === 'connected' ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-black/5' : 'bg-[#039be5] text-white shadow-sm hover:bg-[#0288d1]'}`}
+            >
+              {telegramStatus === 'connected' ? 'Сбросить' : 'Связать с ботом'}
+            </button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <h3 className={`text-xs font-black uppercase tracking-wider ${t.textClass}`}>События системы</h3>
+          </div>
+          <button 
+            onClick={() => {
+              SoundEngine.playTick();
+              setSystemLogs([`[${new Date().toLocaleTimeString('ru-RU')}] Логи очищены. Ожидание транзакций заказа...`]);
+            }}
+            className={`text-[10px] font-bold ${t.mutedTextClass} hover:underline cursor-pointer`}
+          >
+              </p>
+            </div>
+          )}
+
+          {orderType === 'delivery' && (
+            <div className="space-y-3.5">
+              <div>
+                <label className={`block text-[10px] font-black uppercase tracking-wider mb-2 ${t.mutedTextClass}`}>Адрес доставки партнера</label>
+                <div className="relative">
+                  <input 
+                    required 
+                    type="text" 
+                    value={customerInfo.address} 
+                    onChange={e => setCustomerInfo({...customerInfo, address: e.target.value})} 
+                    className={`w-full pl-4 pr-10 py-3.5 rounded-2xl border-none outline-none font-medium text-sm transition-all focus:ring-2 ${t.ringClass} ${t.inputBgClass} ${t.textClass} placeholder:opacity-50`} 
+                    placeholder="Укажите адрес или нажмите авто-определение..." 
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400">
+                    <MapPin className="w-4 h-4 pointer-events-none" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Advanced Geolocation Quick tools */}
+              <div className="flex flex-wrap gap-2 pt-0.5">
+                <button
+                  type="button"
+                  onClick={handleAutoGpsL
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        `[${timestamp}] [MAP_PICK] Координата вручную зафиксирована: ${selectedMapPoint.lat.toFixed(6)}, ${selectedMapPoint.lng.toFixed(6)}`,
+                        `[${timestamp}] [MAP_PICK] Адрес доставки обновлен: "${addressString}"`,
+                        ...prev
+                      ]);
+                    }}
+                    className={`w-full py-3 rounded-2xl text-xs font-black uppercase tracking-wider text-white ${t.accentBgClass} ${t.accentHoverBgClass} cursor-pointer`}
+                  >
+                    Сохранить адрес
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+          
+          <div>
+            <label className={`block text-[10px] font-black uppercase tracking-wider mb-2 ${t.mutedTextClass}`}>Добавочный комментарий</label>
+            <textarea rows={2} value={customerInfo.comment} onChange={e => setCustomerInfo({...customerInfo, comment: e.target.value})} className={`w-full px-4 py-3.5 rounded-2xl border-none outline-none font-medium text-sm transition-all resize-none focus:ring-2 ${t.ringClass} ${t.inputBgClass} ${t.textClass}`} placeholder="Особые условия, время разгрузки..." />
+          </div>
+        </div>
+
+        <div className={`p-6 rounded-3xl shadow-lg mt-6 text-white ${t.id === 'dark' ? 'bg-[#1e293b] border border-slate-700' : 'bg-gray-900'}`}>
+          <div className="flex justify-between items-center mb-6">
+            <span className="text-gray-300 font-medium">К оплате (со скидкой)</span>
+            <span className="text-2xl font-black tracking-tight 
+
+
+
+
+
+
+
+
+        <div className={`text-3xl font-black tracking-widest font-mono ${t.textClass}`}>{orderNumber}</div>
+      </div>
+      <button 
+        onClick={() => { SoundEngine.playTick(); setActiveTab('history'); setOrderType('delivery'); }}
+        className={`font-black text-xs uppercase tracking-widest px-8 py-4 rounded-full transition-all w-full active:scale-95 text-white ${t.accentBgClass} ${t.accentHoverBgClass}`}
+      >
+        Перейти к моим заказам
+      </button>
+    </div>
+  );
+
+  const renderNotifications = () => (
+    <AnimatePresence>
+      {isNotificationsOpen && (
+        <div className="fixed inset-0 z-[150] sm:relative sm:inset-auto">
+          <div 
+             className="fixed inset-0 bg-black/40 backdrop-blur-sm sm:hidden" 
+             onClick={() => setIsNotificationsOpen(false)} 
+          />
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            className={`absolute top-20 right-4 left-4 sm:left-auto sm:right-0 sm:w-80 max-h-[70vh] overflow-hidden flex flex-col rounded-3xl border shadow-2xl z-50 ${t.cardClass}`}
+          >
+            <div className="p-4 border-b border-black/5 flex items-center justify-between">
+              <h3 className={`text-sm font-black uppercase tracking-wider ${t.textClass}`}>Уведо
+
+
+
+
+
+
+
+
+
+
+
+
+                </div>
+              ) : (
+                notifications.map((notif) => (
+                  <div key={notif.id} className="p-3 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors border border-transparent hover:border-black/5">
+                    <div className="flex gap-3">
+                      <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center ${notif.type === 'success' ? 'bg-green-500/10 text-green-500' : 'bg-sky-500/10 text-sky-500'}`}>
+                        {notif.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-xs font-bold leading-tight line-clamp-2 ${t.textClass}`}>{notif.message}</p>
+                        {notif.orderId && <p className={`text-[9px] font-mono mt-1 opacity-50 ${t.mutedTextClass}`}>ID: {notif.orderId}</p>}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            {notifications.length > 0 && (
+              <div className="p-3 border-t border-black/5 text-center">
+                 <button 
+                   onClick={() => setIsNotificationsOpen(false)}
+                   className={`text-[10px] font-black uppercase tracking-widest ${t.mutedTextClass}`}
+                 >
+                   Закрыть
+                 </button>
+              </div>
+            )}
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+              <h3 className={`text-sm font-black uppercase tracking-wider ${t.textClass}`}>Уведомления</h3>
+              <button 
+                onClick={() => setNotifications([])}
+                className={`text-[10px] font-bold uppercase tracking-widest opacity-50 hover:opacity-100 ${t.textClass}`}
+              >
+                Очистить
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-2 space-y-1">
+              {notifications.length === 0 ? (
+                <div className="py-12 flex flex-col items-center justify-center opacity-40">
+                  <Bell className="w-8 h-8 mb-2" />
+                  <p className="text-xs font-bold uppercase tracking-widest text-center">Нет новых<br/>уведомлений</p>
+                </div>
+              ) : (
+                notifications.map((notif) => (
+                  <div key={notif.id} className="p-3 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors border border-transparent hover:border-black/5">
+                    <div className="flex gap-3">
+                      <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center ${notif.type === 'success' ? 'bg-green-500/10 text-green-500' : 'bg-sky-500/10 text-sky-500'}`}>
+                        {notif.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-xs font-bold leading-tight line-clamp-2 ${t.textClass}`}>{notif.message}</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <span className={`text-xs font-bold ${t.textClass}`}>{quickViewProduct.rating || 4.8} / 5</span>
+                    <span className={`text-xs opacity-60 ${t.mutedTextClass}`}>({quickViewProduct.ratingCount || Math.floor(Math.random() * 50) + 10} отзывов)</span>
+                  </div>
+                  <h2 className={`text-xl sm:text-2xl font-black tracking-tight leading-tight ${t.textClass}`}>
+                    {quickViewProduct.name}
+                  </h2>
+                  
+                  {quickViewProduct.description ? (
+                     <p className={`text-sm leading-relaxed ${t.textClass} opacity-90`}>{quickViewProduct.description}</p>
+                  ) : (
+                     <p className={`text-sm leading-relaxed ${t.textClass} opacity-80`}>Подробное описание товара временно отсутствует. Вы можете задать вопросы нашим менеджерам в Telegram или по телефону.</p>
+                  )}
+                  
+                  {/* Reviews Section */}
+                  <div className="pt-4 border-t border-black/5 mt-4 space-y-4">
+                    <h3 className={`text-sm font-black uppercase tracking-wider ${t.textClass}`}>Отзывы покупателей</h3>
+                    
+                    {/* Reviews List */}
+                    <div className="space-y-3">
+                      {activeReviews
+
+
+
+
+
+
+
+                            <span className={`text-xs font-bold w-full ${t.textClass}`}>{review.customerName}</span>
+                            <span className={`text-[10px] ${t.mutedTextClass} mr-2 whitespace-nowrap`}>
+                              {new Date(review.timestamp).toLocaleDateString('ru-RU')}
+                            </span>
+                            <div className="flex items-center gap-0.5 shrink-0">
+                              {[...Array(5)].map((_, i) => (
+                                 <Star key={i} className={`w-3.5 h-3.5 ${i < review.rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300 dark:text-gray-600'}`} />
+                              ))}
+                            </div>
+                          </div>
+                          <p className={`text-xs leading-relaxed ${t.textClass} opacity-90`}>{review.text}</p>
+                        </motion.div>
+                      ))}
+                      {activeReviews.length === 0 && (
+                        <p className={`text-xs italic ${t.mutedTextClass} text-center py-4`}>
+                          Отзывов об этом товаре пока нет. Станьте первым!
+                        </p>
+                      )}
+                    </div>
+  
+                    {/* Add Review Form */}
+                    <div className="bg-black/5 dark:bg-black/40 rounded-3xl p-4 border border-black/5 space-y-3 mt-4">
+                      <span className={`text-xs font-bold leading-none block ${t.textClass}`}>Оставить свой отзыв</span>
+                      <div className="flex items-center gap-1 cursor-pointer w-max">
+                </div>
+                <div className="p-5 sm:p-6 space-y-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                    <span className={`text-xs font-bold ${t.textClass}`}>{quickViewProduct.rating || 4.8} / 5</span>
+                    <span className={`text-xs opacity-60 ${t.mutedTextClass}`}>({quickViewProduct.ratingCount || Math.floor(Math.random() * 50) + 10} отзывов)</span>
+                  </div>
+                  <h2 className={`text-xl sm:text-2xl font-black tracking-tight leading-tight ${t.textClass}`}>
+                    {quickViewProduct.name}
+                  </h2>
+                  
+                  {quickViewProduct.description ? (
+                     <p className={`text-sm leading-relaxed ${t.textClass} opacity-90`}>{quickViewProduct.description}</p>
+                  ) : (
+                     <p className={`text-sm leading-relaxed ${t.textClass} opacity-80`}>Подробное описание товара временн
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            <span className={`text-xs font-bold w-full ${t.textClass}`}>{review.customerName}</span>
+                            <span className={`text-[10px] ${t.mutedTextClass} mr-2 whitespace-nowrap`}>
+                              {new Date(review.timestamp).toLocaleDateString('ru-RU')}
+                            </span>
+                            <div className="flex items-center gap-0.5 shrink-0">
+                              {[...Array(5)].map((_, i) => (
+                                 <Star key={i} className={`w-3.5 h-3.5 ${i < review.rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300 dark:text-gray-600'}`} />
+                              ))}
+                            </div>
+                          </div>
+                          <p className={`text-xs leading-relaxed ${t.textClass} opacity-90`}>{review.text}</p>
+                        </motion.div>
+                      ))}
+                      {activeReviews.length === 0 && (
+                        <p className={`text-xs italic ${t.mutedTextClass} text-center py-4`}>
+                          Отзывов об этом товаре пока нет. Станьте первым!
+                        </p>
+                      )}
+                    </div>
+  
+                    {/* Add Review Form */}
+                    <div className="bg-black/5 dark:bg-black/40 rounded-3xl p-4 border border-black/5 space-y-3 mt-4">
+                      <span className={`text-xs font-bold leading-none block ${t.textClass}`}>Оставить свой отзыв</span>
+                      <div className="flex items-center gap-1 cursor-pointer w-max">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-500" /> : <VolumeX className="w-4 h-4 text-gray-400" />}
+          </button>
+        </div>
+
+        <div className="p-6">
+          <div className={`rounded-2xl p-4 border flex items-center gap-3.5 ${t.cardHighlightClass} ${t.borderClass}`}>
+             <div className="w-9 h-9 bg-white shadow-sm border rounded-full flex items-center justify-center text-gray-400">
+               <User className="w-4 h-4" />
+             </div>
+             <div className="min-w-0 flex-1">
+               <div className={`text-[9px] font-black uppercase tracking-wider opaci              <div className="flex-1 overflow-y-auto pr-1">
+                {isReconciliationLoading ? (
+                  <div className="text-center py-10">
+                    <span className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin inline-block"></span>
+                    <p className={`text-xs mt-2 ${t.mutedTextClass}`}>Загрузка данных взаиморасчетов...</p>
+                  </div>
+                ) : !Array.isArray(reconciliationData) || reconciliationData.length === 0 ? (
+                  <div className="text-center py-10">
+                    <Receipt className="w-12 h-12 mx-auto text-gray-400 opacity-60 mb-2" />
+                    <p className={`text-sm font-semibold ${t.textClass}`}>Нет записей</p>
+                    <p
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            <th className="p-3">Дата</th>
+                            <th className="p-3">Операция</th>
+                            <th className="p-3 text-right">Дебет (₽)</th>
+                            <th className="p-3 text-right">Кредит (₽)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Array.isArray(reconciliationData) && reconciliationData.map((item, idx) => (ve ? t.textClass : 'text-slate-450'}`}>
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Reconciliation Overlay Modal */}
+      <AnimatePresence>
+        {isReconciliationOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-[150] p-4" onClick={() => setIsReconciliationOpen(false)}>
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className={`w-full max-w-2xl rounded-3xl p-6 border shadow-2xl space-y-5 overflow-hidden flex flex-col max-h-[85vh] ${t.cardClass}`}
+            >
+              <div className="flex justify-between items-start shrink-0">
+                <div>
+                  <h3 className={`text-lg font-black tracking-tight ${t.textClass}`}>Акт сверки взаимных расчетов</h3>
+                  <p className={`text-xs ${t.mutedTextClass}`}>Детализированная выписка по вашим заказам и платежам</p>
+                </div>
+                <button 
+                  type="button" 
+                  onClick={() => { SoundEngine.playTick(); setIsReconciliationOpen(false); }}
+                  className={`p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-w
+                     transition={{ type: "spring", stiffness: 450, damping: 30 }}
+                  />
+                )}
+                <button 
+                  type="button" 
+                  onClick={() => { SoundEngine.playTick(); setIsReconciliationOpen(false); }}
+                  className={`p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 ${t.mutedTextClass}`}
+                >
+                  <p className={`text-xs ${t.mutedTextClass}`}>Детализированная выписка по вашим заказам и платежам</p>
+                </div>
+                <button 
+                  type="button" 
+                  onClick={() => { SoundEngine.playTick(); setIsReconciliationOpen(false); }}
+                  className={`p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 ${t.mutedTextClass}`}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto pr-1">
+                {isReconciliationLoading ? (
+                  <div className="text-center py-10">
+                    <span className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin inline-block"></span>
+                    <p className={`text-xs mt-2 ${t.mutedTextClass}`}>Загрузка данных взаиморасчетов...</p>
+                  </div>
+                ) : reconciliationData.length === 0 ? (
+                  <div className="text-center py-10">
+                    <Receipt className="w-12 h-12 mx-auto text-gray-400 opacity-60 mb-2" />
+                    <p className={`text-sm font-semibold ${t.textClass}`}>Нет записей</p>
+                    <p className={`text-xs mt-1 ${t.mutedTextClass}`}>Транзакции по вашему аккаунту отсутству
+}
+
+
+
+
+
+
+                          {formatPrice(reconciliationData.reduce((sum, item) => sum + item.credit, 0))}
+                        </div>
+                      </div>
+                      <div className={`p-3 rounded-2xl border bg-black/5 dark:bg-white/5 ${t.borderClass}`}>
+                        <span className={`text-[10px] uppercase font-black tracking-wider ${t.mutedTextClass}`}>Текущий Долг</span>
+                        <div className={`text-sm sm:text-base font-black text-red-600 dark:text-red-400 mt-1`}>
+                          {formatPrice(currentUser?.debt || 0)}
+                          {formatPrice(reconciliationData.reduce((sum, item) => sum + item.credit, 0))}
+                        </div>
+                      </div>
+                      <div className={`p-3 rounded-2xl border bg-black/5 dark:bg-white/5 ${t.borderClass}`}>
+                        <span className={`text-[10px] uppercase font-black tracking-wider ${t.mutedTextClass}`}>Текущий Долг</span>
+                        <div className={`text-sm sm:text-base font-black text-red-600 dark:text-red-400 mt-1`}>
+                          {formatPrice(currentUser?.debt || 0)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Transactions Table */}
+                    <div className={`border rounded-2xl overflow-hidden ${t.borderClass}`}>
+                      <table className="w-full text-left border-collapse text-xs">
+                        <thead>
+                                  day: '2-digit',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </td>
+                              <td className={`p-3 font-semibold ${t.textClass}`}>
+                                {item.description}
+                              </td>
+                              <td className="p-3 text-right font-bold text-gray-900 dark:text-white">
+                                {item.debit > 0 ? formatPrice(item.debit) : '—'}
+                              </td>
+                              <td className="p-3 text-right font-bold text-emerald-600 dark:text-emerald-400">
+                                {item.credit > 0 ? formatPrice(item.credit) : '—'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 shrink-0 pt-2 border-t border-black/5">
+                <button
+                  type="button"
+                  onClick={() => { SoundEngine.playTick(); setIsReconciliationOpen(false); }}
+                  className={`w-full py-3 rounded-2xl text-xs font-black uppercase tracking-wider text-white ${t.accentBgClass} ${t.accentHoverBgClass} cursor-pointer`}
+                >
+                  Закрыть выписку
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+                >
+                  Закрыть выписку
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <style>{`
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+          .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+          .pt-safe { padding-top: env(safe-area-inset-top); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+                            <th className="p-3">Дата</th>
+                            <th className="p-3">Операция</th>
+                            <th className="p-3 text-right">Дебет (₽)</th>
+                            <th className="p-3 text-right">Кредит (₽)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {reconciliationData.map((item, idx) => (
+                            <tr key={idx} className="border-b border-black/5 dark:border-white/5 hover:bg-black/2">

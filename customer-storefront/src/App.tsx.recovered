@@ -1,0 +1,18 @@
+
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+# Tasks - Storefront Enhancements
+
+- [x] Create `productReviews` table in `schema.ts`
+- [x] Implement database sync with `npm run db:push`
+- [x] Add reviews and reconciliation API endpoints in backend `index.ts` and `storefrontOrders.ts`
+- [x] Register new storefront API helper functions in `customer-storefront/src/api.ts`
+- [x] Update `Order` interface in `customer-storefront/src/types.ts`
+- [x] Modify `App.tsx` catalog loading to resolve category filtering mismatch
+- [x] Resolve price division `/ 100` scaling globally in `App.tsx`
+- [x] Remove "События системы" telemetry view from profile tab
+- [x] Build interactive "Акт сверки" (Reconciliation ledger) modal in profile tab
+- [x] Clean up mock product reviews and link modal to database reviews
+- [x] Add filter tabs (Все, Онлайн, Самовывоз) for history tab
+- [x] Verify compilation with zero errors via `npm run lint` in both projects
+
+The above content shows the entire, complete file contents of the requested file.

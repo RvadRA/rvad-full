@@ -10,6 +10,7 @@ import BarcodeScanner from './BarcodeScanner';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import JsBarcode from 'jsbarcode';
+import { api } from '../utils/api';
 
 const CleanBarcode = ({ value, s }: { value: string, s: any }) => {
   const svgRef = React.useRef<SVGSVGElement>(null);
@@ -168,6 +169,7 @@ export default function Inventory({
   const [newProdStock, setNewProdStock] = useState(20);
   const [newProdMinStock, setNewProdMinStock] = useState(5);
   const [newProdUnit, setNewProdUnit] = useState('шт');
+  const [isUploading, setIsUploading] = useState(false);
   const [newProdSupplier, setNewProdSupplier] = useState(suppliers[0]?.id || 'sup-1');
   const [newProdResponsibleEmployeeId, setNewProdResponsibleEmployeeId] = useState('');
   const [newProdIsPromo, setNewProdIsPromo] = useState(false);
@@ -1978,14 +1980,19 @@ COMMIT;`;
                           type="file"
                           accept="image/*"
                           className="text-xs w-48 text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border file:border-slate-700 file:text-xs file:font-bold file:bg-[#1C1E26] file:text-blue-400 hover:file:bg-[#252833]"
-                          onChange={(e) => {
+                          onChange={async (e) => {
                             const file = e.target.files?.[0];
                             if (file) {
-                              const reader = new FileReader();
-                              reader.onloadend = () => {
-                                setNewProdImageUrl(reader.result as string);
-                              };
-                              reader.readAsDataURL(file);
+                              try {
+                                setIsUploading(true);
+                                const res = await api.upload(file);
+                                setNewProdImageUrl(res.url);
+                              } catch (err: any) {
+                                alert(`Ошибка загрузки изображения: ${err.message}`);
+                                setNewProdImageUrl('');
+                              } finally {
+                                setIsUploading(false);
+                              }
                             }
                           }}
                         />
@@ -1998,6 +2005,11 @@ COMMIT;`;
                           className="flex-1 min-w-0 bg-[#1C1E26] border border-slate-800 p-2 rounded-xl text-slate-200 focus:ring-1 focus:ring-blue-500 text-xs"
                         />
                       </div>
+                      {isUploading && (
+                        <div className="mt-2 text-[10px] font-bold text-amber-400 font-mono animate-pulse">
+                          ⏳ Загрузка в облако Cloudinary...
+                        </div>
+                      )}
                       {newProdImageUrl && (
                         <div className="mt-2 w-16 h-16 rounded-xl border border-slate-700 overflow-hidden bg-slate-800 p-0.5">
                           <img src={newProdImageUrl} alt="Preview" className="w-full h-full object-contain" />
@@ -2333,14 +2345,19 @@ COMMIT;`;
                         type="file"
                         accept="image/*"
                         className="text-xs w-48 text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border file:border-slate-700 file:text-xs file:font-bold file:bg-[#1C1E26] file:text-blue-400 hover:file:bg-[#252833]"
-                        onChange={(e) => {
+                        onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                              setEditImageUrl(reader.result as string);
-                            };
-                            reader.readAsDataURL(file);
+                            try {
+                              setIsUploading(true);
+                              const res = await api.upload(file);
+                              setEditImageUrl(res.url);
+                            } catch (err: any) {
+                              alert(`Ошибка загрузки изображения: ${err.message}`);
+                              setEditImageUrl('');
+                            } finally {
+                              setIsUploading(false);
+                            }
                           }
                         }}
                       />
@@ -2353,6 +2370,11 @@ COMMIT;`;
                         className="flex-1 w-full bg-[#1C1E26] border border-slate-800 p-2.5 rounded-xl text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
                       />
                     </div>
+                    {isUploading && (
+                      <div className="mt-2 text-[10px] font-bold text-amber-400 font-mono animate-pulse">
+                        ⏳ Загрузка в облако Cloudinary...
+                      </div>
+                    )}
                     {editImageUrl && (
                       <div className="mt-2 w-16 h-16 rounded-xl border border-slate-700 overflow-hidden bg-slate-800 p-0.5">
                         <img src={editImageUrl} alt="Preview" className="w-full h-full object-contain" referrerPolicy="no-referrer" />

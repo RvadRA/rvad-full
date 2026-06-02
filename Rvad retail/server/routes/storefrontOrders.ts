@@ -229,6 +229,7 @@ router.post('/', requireCustomerAuth, async (req: any, res) => {
         orderType,
         paymentMethod,
         timestamp: saleTimestamp.toISOString(),
+        phoneNumber: customer.phone,
         items: enrichedItems.map(item => ({
           productId: item.productId,
           productName: item.productName,

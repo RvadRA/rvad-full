@@ -229,8 +229,17 @@ async function startServer() {
   // Webhook Routes
   app.post('/api/telegram/webhook/internal', async (req, res) => {
     try {
-      if (internalToken && req.body && req.body.message) {
-        await handleInternalBotUpdate(internalToken, req.body.message);
+      if (internalToken && req.body) {
+        if (req.body.message) {
+          await handleInternalBotUpdate(internalToken, req.body.message);
+        } else if (req.body.callback_query) {
+          await handleInternalBotUpdate(internalToken, {
+            callback_query: req.body.callback_query,
+            chat: req.body.callback_query.message?.chat,
+            from: req.body.callback_query.from,
+            text: ""
+          });
+        }
       }
       return res.sendStatus(200);
     } catch (e: any) {
@@ -241,8 +250,17 @@ async function startServer() {
 
   app.post('/api/telegram/webhook/client', async (req, res) => {
     try {
-      if (clientToken && req.body && req.body.message) {
-        await handleClientBotUpdate(clientToken, req.body.message);
+      if (clientToken && req.body) {
+        if (req.body.message) {
+          await handleClientBotUpdate(clientToken, req.body.message);
+        } else if (req.body.callback_query) {
+          await handleClientBotUpdate(clientToken, {
+            callback_query: req.body.callback_query,
+            chat: req.body.callback_query.message?.chat,
+            from: req.body.callback_query.from,
+            text: ""
+          });
+        }
       }
       return res.sendStatus(200);
     } catch (e: any) {

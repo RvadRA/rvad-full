@@ -62,6 +62,10 @@ async function startServer() {
     const cleanStorefrontUrl = process.env.STOREFRONT_URL.replace(/\/$/, '');
     allowedOrigins.push(cleanStorefrontUrl);
   }
+  if (process.env.APP_URL) {
+    const cleanAppUrl = process.env.APP_URL.replace(/\/$/, '');
+    allowedOrigins.push(cleanAppUrl);
+  }
 
   app.use(cors({
     origin: (origin, callback) => {
@@ -70,8 +74,8 @@ async function startServer() {
       if (allowedOrigins.includes(cleanOrigin)) {
         callback(null, true);
       } else {
-        console.warn(`[CORS] Rejected origin: ${origin}`);
-        callback(new Error(`Origin ${origin} not allowed by CORS`));
+        // Return false instead of an Error to avoid throwing 500 responses
+        callback(null, false);
       }
     },
     credentials: true,
